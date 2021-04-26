@@ -4,6 +4,7 @@ import {
   useLoadScript,
   Marker,
   InfoWindow,
+  MarkerClusterer,
 } from "@react-google-maps/api";
 
 import { Container } from "./styles";
@@ -32,6 +33,10 @@ const markers = [
     lat: 41.244169293551274,
     lng: 1.79524911450404,
   },
+  {
+    lat: 41.314569293551274,
+    lng: 1.80525211450404,
+  },
 ];
 
 const Location = () => {
@@ -40,7 +45,11 @@ const Location = () => {
     googleMapsApiKey: process.env.REACT_APP_GOOGLE_MAPS_API_KEY,
   });
 
-  return (
+  function createKey(location) {
+    return location.lat + location.lng;
+  }
+
+  /* return (
     <Container ratio={16 / 9}>
       {loadError ? (
         "Error loading maps"
@@ -51,6 +60,13 @@ const Location = () => {
           mapContainerStyle={mapContainerStyle}
           zoom={10}
           center={center}
+          onLoad={map => {
+            const bounds = new window.google.maps.LatLngBounds();
+            markers.map(marker => {
+              bounds.extend(marker);
+            });
+            map.fitBounds(bounds);
+          }}
         >
           {markers.map((marker, i) => (
             <Marker
@@ -59,6 +75,42 @@ const Location = () => {
               onClick={() => setCurrentMarker(marker)}
             />
           ))}
+          {currentMarker && (
+            <InfoWindow
+              position={{ lat: currentMarker.lat, lng: currentMarker.lng }}
+              onCloseClick={() => setCurrentMarker(null)}
+            >
+              <div>Marker information!</div>
+            </InfoWindow>
+          )}
+        </GoogleMap>
+      )}
+    </Container>
+  ); */
+
+  return (
+    <Container ratio={16 / 9}>
+      {loadError ? (
+        "Error loading maps"
+      ) : !isLoaded ? (
+        "Loading maps"
+      ) : (
+        <GoogleMap
+          mapContainerStyle={mapContainerStyle}
+          zoom={6}
+          center={center}
+        >
+          <MarkerClusterer>
+            {clusterer =>
+              markers.map(location => (
+                <Marker
+                  key={createKey(location)}
+                  position={location}
+                  clusterer={clusterer}
+                />
+              ))
+            }
+          </MarkerClusterer>
           {currentMarker && (
             <InfoWindow
               position={{ lat: currentMarker.lat, lng: currentMarker.lng }}
